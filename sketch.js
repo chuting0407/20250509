@@ -41,17 +41,22 @@ function draw() {
   noStroke();
   ellipse(circleX, circleY, circleSize);
 
-  // Ensure at least one hand is detected
+  // 確保至少檢測到一隻手
   if (hands.length > 0) {
     for (let hand of hands) {
       if (hand.confidence > 0.1) {
-        // 獲取食指的座標 (keypoint 8)
+        // 獲取食指與大拇指的座標
         let indexFinger = hand.keypoints[8];
+        let thumb = hand.keypoints[4];
 
-        // 如果食指觸碰到圓，讓圓跟隨食指移動
-        if (dist(indexFinger.x, indexFinger.y, circleX, circleY) < circleSize / 2) {
-          circleX = indexFinger.x;
-          circleY = indexFinger.y;
+        // 檢查食指與大拇指是否同時觸碰圓的邊緣
+        let indexDist = dist(indexFinger.x, indexFinger.y, circleX, circleY);
+        let thumbDist = dist(thumb.x, thumb.y, circleX, circleY);
+
+        if (indexDist < circleSize / 2 && thumbDist < circleSize / 2) {
+          // 更新圓的位置為兩點的中點
+          circleX = (indexFinger.x + thumb.x) / 2;
+          circleY = (indexFinger.y + thumb.y) / 2;
         }
 
         // Loop through keypoints and draw circles
