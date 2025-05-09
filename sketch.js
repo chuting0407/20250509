@@ -6,6 +6,8 @@ let handPose;
 let hands = [];
 let circleX, circleY;
 let circleSize = 100;
+let isDragging = false;
+let trail = []; // 儲存所有軌跡點
 
 function preload() {
   // Initialize HandPose model with flipped video input
@@ -41,25 +43,30 @@ function draw() {
   noStroke();
   ellipse(circleX, circleY, circleSize);
 
+  let currentHand = null; // 儲存目前夾住圓的手
+
   // 確保至少檢測到一隻手
   if (hands.length > 0) {
-    let fingersTouching = []; // 儲存觸碰圓的手指座標
-
     for (let hand of hands) {
       if (hand.confidence > 0.1) {
         // 獲取食指與大拇指的座標
         let indexFinger = hand.keypoints[8];
         let thumb = hand.keypoints[4];
 
-        // 檢查食指與大拇指是否觸碰圓的邊緣
+        // 檢查食指與大拇指是否同時觸碰圓的邊緣
         let indexDist = dist(indexFinger.x, indexFinger.y, circleX, circleY);
         let thumbDist = dist(thumb.x, thumb.y, circleX, circleY);
 
-        if (indexDist < circleSize / 2) {
-          fingersTouching.push(indexFinger);
-        }
-        if (thumbDist < circleSize / 2) {
-          fingersTouching.push(thumb);
+        if (indexDist < circleSize / 2 && thumbDist < circleSize / 2) {
+          // 更新圓的位置為兩點的中點
+          circleX = (indexFinger.x + thumb.x) / 2;
+          circleY = (indexFinger.y + thumb.y) / 2;
+
+          // 設定目前夾住圓的手
+          currentHand = hand.handedness;
+
+          // 儲存軌跡點
+          trail.push({ x: circleX, y: circleY, color: currentHand === "Right" ? "green" : "red" });
         }
 
         // Loop through keypoints and draw circles
@@ -97,15 +104,19 @@ function draw() {
         connectKeypoints(hand.keypoints, 17, 20);
       }
     }
-    // 如果有兩隻手指同時觸碰圓，更新圓的位置
-    if (fingersTouching.length >= 2) {
-      let finger1 = fingersTouching[0];
-      let finger2 = fingersTouching[1];
+  }
 
-      // 更新圓的位置為兩點的中點
-      circleX = (finger1.x + finger2.x) / 2;
-      circleY = (finger1.y + finger2.y) / 2;
-    }
+  // 畫出所有軌跡
+  noFill();
+  for (let i = 1; i < trail.length; i++) {
+    stroke(trail[i].color);
+    strokeWeight(2);
+    line(trail[i - 1].x, trail[i - 1].y, trail[i].x, trail[i].y);
+  }
+
+  // 如果停止拖曳，清除軌跡
+  if (!isDragging) {
+    trail = [];
   }
 }
 
