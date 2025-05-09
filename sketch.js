@@ -68,40 +68,6 @@ function draw() {
           // 儲存軌跡點
           trail.push({ x: circleX, y: circleY, color: currentHand === "Right" ? "green" : "red" });
         }
-
-        // Loop through keypoints and draw circles
-        for (let i = 0; i < hand.keypoints.length; i++) {
-          let keypoint = hand.keypoints[i];
-
-          // Color-code based on left or right hand
-          if (hand.handedness == "Left") {
-            fill(255, 0, 255);
-          } else {
-            fill(255, 255, 0);
-          }
-
-          noStroke();
-          circle(keypoint.x, keypoint.y, 16);
-        }
-
-        // Draw lines connecting keypoints in groups
-        stroke(0); // Set line color
-        strokeWeight(5);
-
-        // Connect keypoints 0 to 4
-        connectKeypoints(hand.keypoints, 0, 4);
-
-        // Connect keypoints 5 to 8
-        connectKeypoints(hand.keypoints, 5, 8);
-
-        // Connect keypoints 9 to 12
-        connectKeypoints(hand.keypoints, 9, 12);
-
-        // Connect keypoints 13 to 16
-        connectKeypoints(hand.keypoints, 13, 16);
-
-        // Connect keypoints 17 to 20
-        connectKeypoints(hand.keypoints, 17, 20);
       }
     }
   }
