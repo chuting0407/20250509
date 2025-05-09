@@ -4,6 +4,8 @@
 let video;
 let handPose;
 let hands = [];
+let circleX, circleY;
+let circleSize = 100;
 
 function preload() {
   // Initialize HandPose model with flipped video input
@@ -23,6 +25,10 @@ function setup() {
   video = createCapture(VIDEO, { flipped: true });
   video.hide();
 
+  // 初始化圓的位置為視窗中間
+  circleX = width / 2;
+  circleY = height / 2;
+
   // Start detecting hands
   handPose.detectStart(video, gotHands);
 }
@@ -30,10 +36,24 @@ function setup() {
 function draw() {
   image(video, 0, 0);
 
+  // 畫出圓
+  fill(0, 255, 0, 150); // 半透明綠色
+  noStroke();
+  ellipse(circleX, circleY, circleSize);
+
   // Ensure at least one hand is detected
   if (hands.length > 0) {
     for (let hand of hands) {
       if (hand.confidence > 0.1) {
+        // 獲取食指的座標 (keypoint 8)
+        let indexFinger = hand.keypoints[8];
+
+        // 如果食指觸碰到圓，讓圓跟隨食指移動
+        if (dist(indexFinger.x, indexFinger.y, circleX, circleY) < circleSize / 2) {
+          circleX = indexFinger.x;
+          circleY = indexFinger.y;
+        }
+
         // Loop through keypoints and draw circles
         for (let i = 0; i < hand.keypoints.length; i++) {
           let keypoint = hand.keypoints[i];
@@ -48,7 +68,7 @@ function draw() {
           noStroke();
           circle(keypoint.x, keypoint.y, 16);
         }
--
+
         // Draw lines connecting keypoints in groups
         stroke(0); // Set line color
         strokeWeight(5);
